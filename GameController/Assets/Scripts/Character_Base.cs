@@ -1,28 +1,33 @@
 using UnityEngine;
-using UnityEngine.UI; // Menambahkan namespace untuk menggunakan elemen UI
+using UnityEngine.UI; 
 
 public class Character_Base : MonoBehaviour
 {
     public int HP = 100;
     public float SPD = 2f;
     public int ATK = 10;
-    public Slider healthBarSlider; // Variabel untuk menampung referensi ke UI Slider
+    public Slider healthBarSlider;
 
-    // Metode Start akan dijalankan saat objek dibuat
+    private Animator animator;
+    private bool isDead = false;
+
     void Start()
     {
-        // Pastikan Slider sudah diatur di Inspector. Jika tidak, akan muncul pesan peringatan
+        animator = GetComponent<Animator>();
+
         if (healthBarSlider != null)
         {
-            healthBarSlider.maxValue = HP; // Atur nilai maksimal slider sama dengan HP awal
-            healthBarSlider.value = HP;    // Atur nilai awal slider sama dengan HP awal
+            healthBarSlider.maxValue = HP;
+            healthBarSlider.value = HP;
         }
     }
 
     public void TakeDamage(int damage)
     {
+        if (isDead) return; // Kalau sudah mati, jangan kena damage lagi
+
         HP -= damage;
-        // Perbarui nilai slider setiap kali HP berubah
+
         if (healthBarSlider != null)
         {
             healthBarSlider.value = HP;
@@ -30,12 +35,19 @@ public class Character_Base : MonoBehaviour
 
         if (HP <= 0)
         {
-            Die();
+            Die(); // HP habis → jalankan animasi mati
         }
     }
 
     protected virtual void Die()
     {
-        Destroy(gameObject); // default: musnahkan object
+        isDead = true;
+        animator.SetTrigger("Die"); // Mulai animasi mati
+    }
+
+    // Fungsi ini dipanggil lewat Animation Event di frame terakhir animasi death
+    public void OnDeathAnimationFinished()
+    {
+        Destroy(gameObject); // Hilangkan object setelah animasi selesai
     }
 }
